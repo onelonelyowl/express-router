@@ -1,22 +1,32 @@
 const User = require('../models/User')
-const app = require('../src/app')
+const users = require('express').Router()
 
-app.get('/users', async (req, res) => {
-    res.json(await User.findAll({
-        attributes: [name]
-    })
-    )
+users.get('/', async (req, res) => {
+    const usernames = []
+    const userObjects = await User.findAll()
+    for(const user in userObjects){
+        usernames.push(user.name)
+    }
+    res.json(await User.findAll({attributes: ['name']}))
 })
 
-app.get('/users/:id', async (req, res) => {
+users.get('/:id', async (req, res) => {
     res.json(await User.findByPk(req.params.id))
 })
 
-app.post('/users', async (req, res) => {
+users.post('/', async (req, res) => {
     res.json(await User.create(req.body))
 })
 
-app.put('/users/:id', async (req, res) => {
+users.put('/:id', async (req, res) => {
     const userToUpdate = await User.findByPk(req.params.id)
     res.json(await userToUpdate.update(req.body))
+    // res.json(userToUpdate)
 })
+
+users.delete('/:id', async (req, res) => {
+    const userToDelete = await User.findByPk(req.params.id)
+    res.json(userToDelete.destroy())
+})
+
+module.exports = {users}
