@@ -1,5 +1,6 @@
 const User = require('../models/User')
 const users = require('express').Router()
+const {check, validationResult} = require('express-validator')
 
 users.get('/', async (req, res) => {
     const usernames = []
@@ -14,11 +15,18 @@ users.get('/:id', async (req, res) => {
     res.json(await User.findByPk(req.params.id))
 })
 
-users.post('/', async (req, res) => {
-    res.json(await User.create(req.body))
+users.post('/', [check("name").not().isEmpty().trim(), check("age").not().isEmpty().trim(), check("name").isLength({min: 5, max: 15})], async (req, res) => {
+    const errors = validationResult(req)
+    if(!errors.isEmpty()){
+        res.json({errors: errors.array()})
+    }
+    else{
+        await User.create(req.body)
+        res.json(await User.findAll())
+    }
 })
 
-users.put('/:id', async (req, res) => {
+users.put('/:id', [check("color").not().isEmpty().trim(), check("name").not().isEmpty().trim()], async (req, res) => {
     const userToUpdate = await User.findByPk(req.params.id)
     res.json(await userToUpdate.update(req.body))
     // res.json(userToUpdate)
